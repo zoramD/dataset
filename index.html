@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIPRIS plus開放資料檢視器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Inter字體 */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 自訂滾動條樣式 (可選) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* 排序圖示樣式 */
+        .sort-arrow {
+            font-size: 0.7em;
+            margin-left: 4px;
+            opacity: 0.5;
+        }
+        .sort-arrow.active {
+            opacity: 1;
+        }
+        th {
+            cursor: pointer;
+            user-select: none; /* 防止選擇文字 */
+        }
+        /* 響應式表格 */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* 啟用 iOS 上的慣性滾動 */
+        }
+        /* 確保在小螢幕上不會有水平滾動條出現 */
+        html, body {
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .price-free {
+            color: #7c3aed; /* Tailwind's violet-600 (紫色) */
+            font-weight: 500; /* Tailwind's font-medium */
+        }
+        @media (min-width: 640px) { .container { max-width: 640px; } }
+        @media (min-width: 768px) { .container { max-width: 768px; } }
+        @media (min-width: 1024px) { .container { max-width: 1024px; } }
+        @media (min-width: 1280px) { .container { max-width: 1280px; } }
+        @media (min-width: 1536px) { .container { max-width: 1536px; } }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center py-8 px-4">
+
+    <div class="container bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-7xl">
+        <header class="mb-6 sm:mb-8 text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-indigo-600">KIPRIS plus開放資料</h1>
+            <p class="text-sm text-gray-500 mt-2">資料整理 by 資訊發展小組 & Gemini</p>
+        </header>
+
+        <div class="mb-6 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex space-x-2">
+                    <button id="switchToKRW" class="px-4 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">顯示韓元 (KRW)</button>
+                    <button id="switchToTWD" class="px-4 py-2 text-sm font-medium rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">顯示台幣 (TWD)</button>
+                </div>
+                <span class="text-xs text-gray-500">匯率參考: 1 KRW = 0.023 TWD (僅供參考)</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label for="filterDaiBunrui" class="block text-sm font-medium text-gray-700 mb-1">大分類篩選：</label>
+                    <select id="filterDaiBunrui" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+                        <option value="">全部大分類</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filterChuBunrui" class="block text-sm font-medium text-gray-700 mb-1">中分類篩選：</label>
+                    <select id="filterChuBunrui" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+                        <option value="">全部中分類</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filterShoBunrui" class="block text-sm font-medium text-gray-700 mb-1">小分類篩選：</label>
+                    <select id="filterShoBunrui" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+                        <option value="">全部小分類</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-start items-center gap-2 pt-2">
+                 <button id="exportCSV" class="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">匯出 CSV</button>
+                 <button id="exportXLS" class="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">匯出 XLS (CSV格式)</button>
+            </div>
+        </div>
+
+
+        <div class="mb-6">
+            <input type="text" id="searchInput"
+                   class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                   placeholder="在此搜尋表格內容...">
+        </div>
+
+        <p class="text-sm text-gray-500 mb-3 text-center sm:text-left">英文版網站只列出韓國國內資料</p>
+
+        <div class="table-container rounded-lg border border-gray-200 shadow-sm">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50 sticky top-0 z-10">
+                    </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="100%" class="text-center p-6 text-gray-500" id="loadingMessage">正在載入資料...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="noResultsMessage" class="text-center p-6 text-gray-500 hidden">找不到符合條件的資料。</div>
+
+
+        <nav class="mt-6 flex flex-col sm:flex-row items-center justify-between" aria-label="Table navigation">
+            <div class="mb-4 sm:mb-0">
+                <span class="text-sm text-gray-700">
+                    共 <span id="totalRowCount" class="font-semibold">0</span> 筆資料，
+                    每頁顯示 <select id="rowsPerPageSelect" class="p-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select> 筆
+                </span>
+            </div>
+            <div id="paginationControls" class="flex items-center space-x-1">
+                </div>
+        </nav>
+    </div>
+
+    <footer class="w-full max-w-7xl mx-auto mt-8 mb-4 px-4 sm:px-0">
+        <p class="text-center text-sm text-gray-400">&copy; KIPRIS Plus Data Viewer</p>
+    </footer>
+
+    <script>
+        // CSV 資料 (已修改欄位名稱 "過往總體價格(韓元)" -> "回溯資料價格", "資料產品名稱", 以及 "國內IP數據" -> "韓國國內IP數據")
+        const csvData = `大分類,中分類,小分類,序號,資料產品名稱,當年度價格(韓元),回溯資料價格
+韓國國內IP數據,公報,專利·實用新型,1,發明/新型專利 公開公報,3273463,18004045
+韓國國內IP數據,公報,專利·實用新型,2,發明/新型專利 公告公報,3273463,18004045
+韓國國內IP數據,公報,專利·實用新型,3,專利權延長公告公報,84304,463665
+韓國國內IP數據,公報,專利·實用新型,4,發明/新型專利 標準化公報,0,0
+韓國國內IP數據,公報,設計,5,設計專利公報,682516,3753835
+韓國國內IP數據,公報,商標,6,商標公告公報,3273463,18004045
+韓國國內IP數據,公報,商標,7,商標申請快報,682516,3753835
+韓國國內IP數據,公報,政策資訊,8,政策資訊,0,0
+韓國國內IP數據,行政,專利·實用新型,9,發明/新型專利 案件歷程,682516,3753835
+韓國國內IP數據,行政,專利·實用新型,10,發明/新型專利 官方通知期限,682516,3753835
+韓國國內IP數據,行政,專利·實用新型,11,請求項變更歷程,682516,3753835
+韓國國內IP數據,行政,專利·實用新型,12,發明/新型專利 分類號變更歷程,84304,463665
+韓國國內IP數據,行政,設計,13,設計專利 案件歷程,682516,3753835
+韓國國內IP數據,行政,設計,14,設計專利 分類號變更歷程,84304,463665
+韓國國內IP數據,行政,商標,15,商標案件歷程,682516,3753835
+韓國國內IP數據,行政,商標,16,商標分類號變更歷程,84304,463665
+韓國國內IP數據,行政,審判,17,TMS 通用狀態指標,84304,463665
+韓國國內IP數據,行政,審判,18,爭議案件資料,682516,3753835
+韓國國內IP數據,行政,共通,19,法律狀態歷程,682516,3753835
+韓國國內IP數據,行政,共通,20,註冊/公告事項,682516,3753835
+韓國國內IP數據,行政,共通,21,審查意見通知書,682516,3753835
+韓國國內IP數據,行政,共通,22,核駁審定書,682516,3753835
+韓國國內IP數據,行政,共通,23,核准審定書/註冊證書,682516,3753835
+韓國國內IP數據,行政,共通,24,異議案基本資料,0,0
+韓國國內IP數據,行政,共通,25,分類號,0,0
+韓國國內IP數據,行政,共通,26,KSIC-IPC 對照表,0,0
+韓國國內IP數據,行政,共通,27,CPC-KPC 代碼,0,0
+韓國國內IP數據,行政,共通,28,韓國專利英文摘要(KPA),3273463,18004045
+韓國國內IP數據,行政,共通,29,韓國專利英文摘要(KPA) 快報,0,0
+韓國國內IP數據,行政,共通,30,機器翻譯用韓文摘要,0,0
+韓國國內IP數據,附加,專利·實用新型,31,發明/新型專利 引證資料,84304,463665
+韓國國內IP數據,附加,專利·實用新型,32,發明/新型專利 被引證資料,84304,463665
+韓國國內IP數據,附加,專利·實用新型,33,多次引用先前技術,0,0
+韓國國內IP數據,附加,專利·實用新型,34,專利家族,84304,463665
+韓國國內IP數據,附加,專利·實用新型,35,專利核?酸序列,682516,3753835
+韓國國內IP數據,附加,專利·實用新型,36,專利合金組成,682516,3753835
+韓國國內IP數據,附加,專利·實用新型,37,專利寄存微生物,0,0
+韓國國內IP數據,附加,專利·實用新型,38,國家研發計畫,0,0
+韓國國內IP數據,附加,專利·實用新型,39,即將到期之物質專利,0,0
+韓國國內IP數據,附加,專利·實用新型,40,國有專利,0,0
+韓國國內IP數據,附加,設計,41,設計圖樣分類,0,0
+韓國國內IP數據,附加,人名,42,申請人名稱變更歷程,84304,463665
+韓國國內IP數據,附加,人名,43,代表申請人,682516,3753835
+韓國國內IP數據,附加,人名,44,申請人法人資料,0,0
+韓國國內IP數據,附加,人名,45,權利人變更歷程,84304,463665
+韓國國內IP數據,附加,人名,46,發明/新型專利權人變更歷程,84304,463665
+韓國國內IP數據,附加,人名,47,申請人技術領域,682516,3753835
+韓國國內IP數據,附加,其他,48,競賽作品/創意,0,0
+韓國國內IP數據,附加,其他,49,網路公開技術,0,0
+韓國國內IP數據,附加,其他,50,IP-Biz One Service 技術分類,0,0
+韓國國內IP數據,附加,其他,51,商標產地名稱,0,0
+韓國國內IP數據,附加,其他,52,植物品種權註冊名稱,0,0
+韓國國內IP數據,附加,其他,53,同義詞庫,0,0
+韓國國內IP數據,附加,其他,54,專利英韓技術詞典,0,0
+韓國國內IP數據,附加,其他,55,專利日韓技術詞典,0,0
+AI學習數據,語言學習,,56,專利分類號說明 韓英對照語料庫,0,0
+AI學習數據,語言學習,,57,專利技術詞彙同義對照表(電氣/電子),0,0
+AI學習數據,語言學習,,58,專利潛力評估,0,0
+AI學習數據,語言學習,,59,"專利技術詞彙對照表(電機,機械,化學)",0,0
+AI學習數據,語言學習,,60,專利請求項結構(電機電子),0,0
+AI學習數據,語言學習,,61,專利摘要 韓英對照語料庫,0,0
+AI學習數據,語言學習,,62,專利審查歷程文件 韓英對照語料庫,0,0
+AI學習數據,語言學習,,63,專利綜合語料庫,0,0
+AI學習數據,語言學習,,64,專利英韓對照語料庫,0,0
+AI學習數據,語言學習,,65,專利圖式符號說明,0,0
+AI學習數據,語言學習,,66,AI聊天機器人訓練資料,0,0
+AI學習數據,語言學習,,67,專利公開公報訓練資料 (新增),0,0
+AI學習數據,語言學習,,68,美國專利公報訓練資料 (新增),0,0
+AI學習數據,語言學習,,69,審查意見通知書訓練資料 (新增),0,0
+AI學習數據,語言學習,,70,同族專利韓英機器翻譯訓練資料 (新增),0,0
+AI學習數據,語言學習,,71,CPC分類訓練資料 (新增),0,0
+AI學習數據,語言學習,,72,專利諮詢機器閱讀理解訓練資料 (新增),0,0
+AI學習數據,語言學習,,73,專利客戶諮詢案例訓練資料 (新增),0,0
+韓國國內IP數據,行政,共通,74,發明/新型專利 法律狀態歷程(ST.27),682516,3753835
+AI學習數據,圖像學習,,75,專利圖式符號訓練資料,0,0
+AI學習數據,圖像學習,,76,AI圖形商標圖像檢索訓練資料,0,0
+AI學習數據,圖像學習,,77,AI設計圖樣圖像檢索訓練資料,0,0
+AI學習數據,圖像學習,,78,藥品實驗數據,0,0
+海外IP數據,IP5,美國,79,美國專利公開公報,0,0
+海外IP數據,IP5,美國,80,美國專利公告公報,0,0
+海外IP數據,IP5,美國,81,美國專利公報韓文翻譯,0,0
+海外IP數據,IP5,美國,82,美國商標公告公報,0,0
+海外IP數據,IP5,美國,83,美國專利權人變更歷程(舊),0,0
+海外IP數據,IP5,美國,84,美國專利權人變更歷程,0,0
+海外IP數據,IP5,歐洲,85,歐洲專利公開公報,0,0
+海外IP數據,IP5,歐洲,86,歐洲專利公告公報,0,0
+海外IP數據,IP5,歐洲,87,歐洲專利公報韓文翻譯,0,0
+海外IP數據,IP5,中國,88,中國發明專利公開公報,0,0
+海外IP數據,IP5,中國,89,中國發明專利公告公報,0,0
+海外IP數據,IP5,中國,90,中國外觀設計專利公告公報,0,0
+海外IP數據,IP5,中國,91,中國專利英文摘要,0,0
+海外IP數據,IP5,中國,92,中國專利審查引證資料,0,0
+海外IP數據,IP5,中國,93,中國專利法律狀態歷程,0,0
+海外IP數據,IP5,中國,94,中國專利公報韓文翻譯,0,0
+海外IP數據,IP5,日本,95,日本專利公開公報,0,0
+海外IP數據,IP5,日本,96,日本專利公告公報,0,0
+海外IP數據,IP5,日本,97,日本早期專利公報(TEXT),0,0
+海外IP數據,IP5,日本,98,日本設計專利公告公報,0,0
+海外IP數據,IP5,日本,99,日本商標公開公報,0,0
+海外IP數據,IP5,日本,100,日本商標註冊公報,0,0
+海外IP數據,IP5,日本,101,日本專利標準化資料,0,0
+海外IP數據,IP5,日本,102,日本設計專利標準化資料,0,0
+海外IP數據,IP5,日本,103,日本商標標準化資料,0,0
+海外IP數據,IP5,日本,104,PCT日本國家階段專利,0,0
+海外IP數據,IP5,日本,105,日本專利英文摘要,0,0
+海外IP數據,IP5,日本,106,日本專利分類號,0,0
+海外IP數據,IP5,日本,107,專利日英技術詞典,0,0
+海外IP數據,IP5,日本,108,日本專利合金組成,0,0
+海外IP數據,IP5,日本,109,日本發明/新型專利權人變更歷程,0,0
+海外IP數據,WIPO,,110,PCT公開公報,0,0
+海外IP數據,WIPO,,111,WIPO 工業設計 Hague,0,0
+海外IP數據,台灣,,112,台灣發明專利公開公報,0,0
+海外IP數據,台灣,,113,台灣發明專利公開書目資料,0,0
+海外IP數據,台灣,,114,台灣設計專利公告公報,0,0
+海外IP數據,台灣,,115,台灣設計專利公告書目資料,0,0
+海外IP數據,台灣,,116,台灣專利英文摘要,0,0
+海外IP數據,台灣,,117,台灣商標註冊公告公報,0,0
+海外IP數據,台灣,,118,台灣設計專利要部公告,0,0
+海外IP數據,台灣,,119,台灣智慧財產權公報,0,0
+海外IP數據,其他國家,墨西哥,120,墨西哥專利公開公報,0,0
+海外IP數據,其他國家,墨西哥,121,墨西哥設計專利公告公報,0,0
+海外IP數據,其他國家,墨西哥,122,墨西哥商標公告公報,0,0
+海外IP數據,其他國家,???,123,墨西哥附加價值資料,0,0
+海外IP數據,其他國家,菲律賓,124,菲律賓專利公報,0,0
+海外IP數據,其他國家,哥倫比亞,125,哥倫比亞專利公報,0,0
+海外IP數據,其他國家,俄羅斯,126,俄羅斯專利公報,0,0
+海外IP數據,其他國家,瑞典,127,瑞典專利書目資料,0,0
+海外IP數據,其他國家,西班牙,128,西班牙專利公報,0,0
+海外IP數據,其他國家,以色列,129,以色列專利公報,0,0
+海外IP數據,其他國家,印度,130,印度專利書目資料,0,0
+海外IP數據,其他國家,越南,131,越南專利書目資料,0,0
+海外IP數據,其他國家,ARIPO,132,ARIPO智慧財產權(發明/新型/設計)公報,0,0
+海外IP數據,其他國家,其他,133,藥品國際非專利名稱 (INN),0,0`;
+
+        let originalData = [];
+        let displayData = [];
+        let headers = [];
+        let orderedHeaders = [];
+
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let sortColumn = -1;
+        let sortAsc = true;
+
+        let currentCurrency = 'KRW';
+        const krwToTwdRate = 0.023;
+        const priceColumns = ['當年度價格(韓元)', '回溯資料價格'];
+
+        const tableHead = document.querySelector('table thead');
+        const tableBody = document.querySelector('table tbody');
+        const searchInput = document.getElementById('searchInput');
+        const paginationControls = document.getElementById('paginationControls');
+        const totalRowCountEl = document.getElementById('totalRowCount');
+        const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+        const loadingMessageEl = document.getElementById('loadingMessage');
+        const noResultsMessageEl = document.getElementById('noResultsMessage');
+
+        const filterDaiBunruiSelect = document.getElementById('filterDaiBunrui');
+        const filterChuBunruiSelect = document.getElementById('filterChuBunrui');
+        const filterShoBunruiSelect = document.getElementById('filterShoBunrui');
+        const switchToKRWButton = document.getElementById('switchToKRW');
+        const switchToTWDButton = document.getElementById('switchToTWD');
+        const exportCSVButton = document.getElementById('exportCSV');
+        const exportXLSButton = document.getElementById('exportXLS');
+
+
+        // 解析 CSV 資料
+        function parseCSV(data) {
+            const lines = data.trim().split('\n');
+            if (lines.length === 0) return [];
+            headers = lines[0].split(',');
+            const serialNumberHeader = "序號";
+            orderedHeaders = [serialNumberHeader, ...headers.filter(h => h !== serialNumberHeader)];
+
+            return lines.slice(1).map(line => {
+                const values = [];
+                let currentVal = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        if (inQuotes && i + 1 < line.length && line[i+1] === '"') {
+                            currentVal += '"'; i++;
+                        } else { inQuotes = !inQuotes; }
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentVal.trim()); currentVal = '';
+                    } else { currentVal += char; }
+                }
+                values.push(currentVal.trim());
+                let row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                return row;
+            });
+        }
+
+        // 更新貨幣切換按鈕樣式
+        function updateCurrencyButtonStyles() {
+            if (currentCurrency === 'KRW') {
+                switchToKRWButton.classList.add('bg-indigo-600', 'text-white');
+                switchToKRWButton.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                switchToTWDButton.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                switchToTWDButton.classList.remove('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+            } else { // TWD
+                switchToTWDButton.classList.add('bg-indigo-600', 'text-white');
+                switchToTWDButton.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                switchToKRWButton.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                switchToKRWButton.classList.remove('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+            }
+        }
+
+        // 渲染表頭
+        function renderTableHead() {
+            if (!tableHead) return;
+            tableHead.innerHTML = '';
+            const tr = document.createElement('tr');
+            orderedHeaders.forEach((headerKey, index) => {
+                const th = document.createElement('th');
+                th.className = 'px-4 py-3 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                let displayText = headerKey;
+                if (priceColumns.includes(headerKey)) {
+                    displayText = `${headerKey.replace('(韓元)', '')} (${currentCurrency})`;
+                }
+                th.textContent = displayText;
+                th.dataset.columnIndex = index;
+
+                const arrowSpan = document.createElement('span');
+                arrowSpan.className = 'sort-arrow';
+                if (index === sortColumn) {
+                    arrowSpan.innerHTML = sortAsc ? ' &#9650;' : ' &#9660;';
+                    arrowSpan.classList.add('active');
+                }
+                th.appendChild(arrowSpan);
+
+                th.addEventListener('click', () => {
+                    handleSort(index);
+                });
+                tr.appendChild(th);
+            });
+            tableHead.appendChild(tr);
+        }
+
+        // 渲染表格內容
+        function renderTableBody() {
+             if (!tableBody) return;
+            tableBody.innerHTML = '';
+            noResultsMessageEl.classList.add('hidden');
+
+            if (displayData.length === 0) {
+                if (loadingMessageEl) loadingMessageEl.classList.add('hidden');
+                noResultsMessageEl.classList.remove('hidden');
+                return;
+            }
+            if (loadingMessageEl) loadingMessageEl.classList.add('hidden');
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = displayData.slice(start, end);
+
+            paginatedData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition duration-150 ease-in-out';
+                orderedHeaders.forEach(headerKey => {
+                    const td = document.createElement('td');
+                    td.className = 'px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700';
+                    let cellValue = row[headerKey];
+
+                    if (priceColumns.includes(headerKey)) {
+                        if (cellValue === '0' || cellValue === 0 || cellValue === '"0"') {
+                            cellValue = 'free';
+                            td.classList.add('price-free');
+                        } else {
+                            const numericValue = parseFloat(String(cellValue).replace(/[^0-9.-]+/g,""));
+                            if (!isNaN(numericValue)) {
+                                if (currentCurrency === 'TWD') {
+                                    cellValue = (numericValue * krwToTwdRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+                                } else {
+                                    cellValue = numericValue.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                    td.textContent = cellValue;
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 處理排序
+        function handleSort(columnIndexInOrderedHeaders) {
+            const actualHeaderKey = orderedHeaders[columnIndexInOrderedHeaders];
+
+            if (sortColumn === columnIndexInOrderedHeaders) {
+                sortAsc = !sortAsc;
+            } else {
+                sortColumn = columnIndexInOrderedHeaders;
+                sortAsc = true;
+            }
+
+            displayData.sort((a, b) => {
+                let valA = a[actualHeaderKey];
+                let valB = b[actualHeaderKey];
+
+                const valAIsFree = (priceColumns.includes(actualHeaderKey) && (valA === '0' || valA === 0 || valA === '"0"'));
+                const valBIsFree = (priceColumns.includes(actualHeaderKey) && (valB === '0' || valB === 0 || valB === '"0"'));
+
+                if (valAIsFree && !valBIsFree) return sortAsc ? -1 : 1;
+                if (!valAIsFree && valBIsFree) return sortAsc ? 1 : -1;
+                if (valAIsFree && valBIsFree) return 0;
+
+                if (priceColumns.includes(actualHeaderKey) || actualHeaderKey === '序號') {
+                     const numA = parseFloat(String(valA).replace(/[^0-9.-]+/g,""));
+                     const numB = parseFloat(String(valB).replace(/[^0-9.-]+/g,""));
+                     if (!isNaN(numA) && !isNaN(numB)) {
+                        if (numA < numB) return sortAsc ? -1 : 1;
+                        if (numA > numB) return sortAsc ? 1 : -1;
+                        return 0;
+                     }
+                }
+
+                valA = String(valA).toLowerCase();
+                valB = String(valB).toLowerCase();
+                if (valA < valB) return sortAsc ? -1 : 1;
+                if (valA > valB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+            currentPage = 1;
+            renderTableHead();
+            renderTableBody();
+            renderPagination();
+        }
+
+        // 填充篩選下拉選單
+        function populateFilterDropdowns() {
+            const daiBunruiValues = new Set();
+            const chuBunruiValues = new Set();
+            const shoBunruiValues = new Set();
+
+            originalData.forEach(row => {
+                if (row['大分類']) daiBunruiValues.add(row['大分類']);
+                if (row['中分類']) chuBunruiValues.add(row['中分類']);
+                if (row['小分類']) shoBunruiValues.add(row['小分類']);
+            });
+
+            const populateSelect = (selectElement, values) => {
+                while (selectElement.options.length > 1) { selectElement.remove(1); }
+                Array.from(values).sort().forEach(value => {
+                    if(value){
+                        const option = document.createElement('option');
+                        option.value = value; option.textContent = value;
+                        selectElement.appendChild(option);
+                    }
+                });
+            };
+            populateSelect(filterDaiBunruiSelect, daiBunruiValues);
+            populateSelect(filterChuBunruiSelect, chuBunruiValues);
+            populateSelect(filterShoBunruiSelect, shoBunruiValues);
+        }
+
+        // 套用篩選和搜尋
+        function applyFiltersAndSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const selectedDaiBunrui = filterDaiBunruiSelect.value;
+            const selectedChuBunrui = filterChuBunruiSelect.value;
+            const selectedShoBunrui = filterShoBunruiSelect.value;
+
+            displayData = originalData.filter(row => {
+                const matchesDaiBunrui = !selectedDaiBunrui || row['大分類'] === selectedDaiBunrui;
+                const matchesChuBunrui = !selectedChuBunrui || row['中分類'] === selectedChuBunrui;
+                const matchesShoBunrui = !selectedShoBunrui || row['小分類'] === selectedShoBunrui;
+
+                const matchesSearch = searchTerm === '' || orderedHeaders.some(headerKey => {
+                    let cellValue = row[headerKey];
+                    let displayValue = String(cellValue).toLowerCase();
+
+                    if (priceColumns.includes(headerKey)) {
+                        if (cellValue === '0' || cellValue === 0 || cellValue === '"0"') {
+                            displayValue = 'free';
+                        } else if (currentCurrency === 'TWD' && !isNaN(parseFloat(cellValue))) {
+                            if (searchTerm !== 'free') {
+                                displayValue = (parseFloat(cellValue) * krwToTwdRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).toLowerCase();
+                            }
+                        }
+                    }
+                    return displayValue.includes(searchTerm);
+                });
+                return matchesDaiBunrui && matchesChuBunrui && matchesShoBunrui && matchesSearch;
+            });
+            currentPage = 1;
+            totalRowCountEl.textContent = displayData.length;
+            renderTableBody();
+            renderPagination();
+        }
+
+        // 渲染分頁控制
+        function renderPagination() {
+            if (!paginationControls) return;
+            paginationControls.innerHTML = '';
+            const totalPages = Math.ceil(displayData.length / rowsPerPage);
+            if (totalPages <= 1) return;
+
+            const createButton = (text, page, isDisabled = false, isActive = false) => {
+                const button = document.createElement('button');
+                button.textContent = text; button.type = 'button';
+                button.className = `px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 ease-in-out ${
+                    isActive ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+                if (!isDisabled) {
+                    button.onclick = () => {
+                        currentPage = page; renderTableBody(); renderPagination();
+                    };
+                }
+                return button;
+            };
+
+            paginationControls.appendChild(createButton('上一頁', currentPage - 1, currentPage === 1));
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            if (currentPage <= 3) { endPage = Math.min(totalPages, 5); }
+            if (currentPage > totalPages - 3) { startPage = Math.max(1, totalPages - 4); }
+
+            if (startPage > 1) {
+                paginationControls.appendChild(createButton('1', 1));
+                if (startPage > 2) {
+                     const ellipsis = document.createElement('span'); ellipsis.textContent = '...';
+                     ellipsis.className = 'px-3 py-2 text-sm text-gray-500';
+                     paginationControls.appendChild(ellipsis);
+                }
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                paginationControls.appendChild(createButton(i, i, false, i === currentPage));
+            }
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span'); ellipsis.textContent = '...';
+                    ellipsis.className = 'px-3 py-2 text-sm text-gray-500';
+                    paginationControls.appendChild(ellipsis);
+                }
+                paginationControls.appendChild(createButton(totalPages, totalPages));
+            }
+            paginationControls.appendChild(createButton('下一頁', currentPage + 1, currentPage === totalPages));
+        }
+
+        // 輔助函數：清理CSV儲存格內容 (雙引號逸脫)
+        function sanitizeCSVCell(cellData) {
+            let dataString = String(cellData === null || cellData === undefined ? '' : cellData);
+            if (dataString.includes(',') || dataString.includes('"') || dataString.includes('\n') || dataString.includes('\r')) {
+                dataString = dataString.replace(/"/g, '""');
+                return `"${dataString}"`;
+            }
+            return dataString;
+        }
+
+        // 匯出資料到 CSV/XLS
+        function exportData(format) {
+            if (displayData.length === 0) {
+                const tempAlert = document.createElement('div');
+                tempAlert.textContent = '沒有可匯出的資料。';
+                tempAlert.style.position = 'fixed';
+                tempAlert.style.top = '20px';
+                tempAlert.style.left = '50%';
+                tempAlert.style.transform = 'translateX(-50%)';
+                tempAlert.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+                tempAlert.style.color = 'white';
+                tempAlert.style.padding = '10px 20px';
+                tempAlert.style.borderRadius = '8px';
+                tempAlert.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                tempAlert.style.zIndex = '1000';
+                document.body.appendChild(tempAlert);
+                setTimeout(() => {
+                    document.body.removeChild(tempAlert);
+                }, 3000);
+                return;
+            }
+
+            const csvHeaders = orderedHeaders.map(header => {
+                if (priceColumns.includes(header)) {
+                    return sanitizeCSVCell(`${header.replace('(韓元)', '')} (KRW)`);
+                }
+                return sanitizeCSVCell(header);
+            }).join(',');
+
+            const csvRows = displayData.map(row => {
+                return orderedHeaders.map(headerKey => {
+                    let cellValue = row[headerKey];
+                    if (priceColumns.includes(headerKey)) {
+                        if (cellValue === '0' || cellValue === 0 || cellValue === '"0"') {
+                            cellValue = 0;
+                        } else {
+                            cellValue = parseFloat(String(cellValue).replace(/[^0-9.-]+/g,"")) || 0;
+                        }
+                    }
+                    return sanitizeCSVCell(cellValue);
+                }).join(',');
+            });
+
+            const csvContent = `${csvHeaders}\n${csvRows.join('\n')}`;
+            const blob = new Blob([`\uFEFF${csvContent}`], { type: `text/${format === 'xls' ? 'csv' : 'csv'};charset=utf-8;` });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `kipris_plus_data.${format}`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+
+        // 初始化
+        function initialize() {
+            originalData = parseCSV(csvData);
+            displayData = [...originalData];
+
+            if (originalData.length > 0) {
+                populateFilterDropdowns();
+                updateCurrencyButtonStyles();
+                renderTableHead();
+                totalRowCountEl.textContent = displayData.length;
+                rowsPerPage = parseInt(rowsPerPageSelect.value);
+                renderTableBody();
+                renderPagination();
+            } else {
+                if (loadingMessageEl) loadingMessageEl.textContent = '無資料可顯示或CSV格式錯誤。';
+                tableBody.innerHTML = `<tr><td colspan="${orderedHeaders.length || 1}" class="text-center p-6 text-gray-500">無資料可顯示或CSV格式錯誤。</td></tr>`;
+                totalRowCountEl.textContent = 0;
+            }
+
+            searchInput.addEventListener('input', applyFiltersAndSearch);
+            rowsPerPageSelect.addEventListener('change', (event) => {
+                rowsPerPage = parseInt(event.target.value); currentPage = 1;
+                applyFiltersAndSearch();
+            });
+            filterDaiBunruiSelect.addEventListener('change', applyFiltersAndSearch);
+            filterChuBunruiSelect.addEventListener('change', applyFiltersAndSearch);
+            filterShoBunruiSelect.addEventListener('change', applyFiltersAndSearch);
+
+            switchToKRWButton.addEventListener('click', () => {
+                currentCurrency = 'KRW';
+                updateCurrencyButtonStyles();
+                renderTableHead();
+                applyFiltersAndSearch();
+            });
+            switchToTWDButton.addEventListener('click', () => {
+                currentCurrency = 'TWD';
+                updateCurrencyButtonStyles();
+                renderTableHead();
+                applyFiltersAndSearch();
+            });
+
+            exportCSVButton.addEventListener('click', () => exportData('csv'));
+            exportXLSButton.addEventListener('click', () => exportData('xls'));
+        }
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>
