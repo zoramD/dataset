@@ -155,6 +155,7 @@
 
     <script>
         // CSV 資料 (已修改欄位名稱 "過往總體價格(韓元)" -> "回溯資料價格", "資料產品名稱", 以及 "國內IP數據" -> "韓國國內IP數據")
+        // 第79項之後的當年度價格(韓元),回溯資料價格修改為N/A
         const csvData = `大分類,中分類,小分類,序號,資料產品名稱,當年度價格(韓元),回溯資料價格
 韓國國內IP數據,公報,專利·實用新型,1,發明/新型專利 公開公報,3273463,18004045
 韓國國內IP數據,公報,專利·實用新型,2,發明/新型專利 公告公報,3273463,18004045
@@ -190,7 +191,7 @@
 韓國國內IP數據,附加,專利·實用新型,32,發明/新型專利 被引證資料,84304,463665
 韓國國內IP數據,附加,專利·實用新型,33,多次引用先前技術,0,0
 韓國國內IP數據,附加,專利·實用新型,34,專利家族,84304,463665
-韓國國內IP數據,附加,專利·實用新型,35,專利核?酸序列,682516,3753835
+韓國國內IP數據,附加,專利·實用新型,35,專利核甘酸序列,682516,3753835
 韓國國內IP數據,附加,專利·實用新型,36,專利合金組成,682516,3753835
 韓國國內IP數據,附加,專利·實用新型,37,專利寄存微生物,0,0
 韓國國內IP數據,附加,專利·實用新型,38,國家研發計畫,0,0
@@ -200,7 +201,7 @@
 韓國國內IP數據,附加,人名,42,申請人名稱變更歷程,84304,463665
 韓國國內IP數據,附加,人名,43,代表申請人,682516,3753835
 韓國國內IP數據,附加,人名,44,申請人法人資料,0,0
-韓國國內IP數據,附加,人名,45,權利人變更歷程,84304,463665
+韓國國內IP數據,附加,人名,45,權利人變รก歷程,84304,463665
 韓國國內IP數據,附加,人名,46,發明/新型專利權人變更歷程,84304,463665
 韓國國內IP數據,附加,人名,47,申請人技術領域,682516,3753835
 韓國國內IP數據,附加,其他,48,競賽作品/創意,0,0
@@ -234,61 +235,61 @@ AI學習數據,圖像學習,,75,專利圖式符號訓練資料,0,0
 AI學習數據,圖像學習,,76,AI圖形商標圖像檢索訓練資料,0,0
 AI學習數據,圖像學習,,77,AI設計圖樣圖像檢索訓練資料,0,0
 AI學習數據,圖像學習,,78,藥品實驗數據,0,0
-海外IP數據,IP5,美國,79,美國專利公開公報,0,0
-海外IP數據,IP5,美國,80,美國專利公告公報,0,0
-海外IP數據,IP5,美國,81,美國專利公報韓文翻譯,0,0
-海外IP數據,IP5,美國,82,美國商標公告公報,0,0
-海外IP數據,IP5,美國,83,美國專利權人變更歷程(舊),0,0
-海外IP數據,IP5,美國,84,美國專利權人變更歷程,0,0
-海外IP數據,IP5,歐洲,85,歐洲專利公開公報,0,0
-海外IP數據,IP5,歐洲,86,歐洲專利公告公報,0,0
-海外IP數據,IP5,歐洲,87,歐洲專利公報韓文翻譯,0,0
-海外IP數據,IP5,中國,88,中國發明專利公開公報,0,0
-海外IP數據,IP5,中國,89,中國發明專利公告公報,0,0
-海外IP數據,IP5,中國,90,中國外觀設計專利公告公報,0,0
-海外IP數據,IP5,中國,91,中國專利英文摘要,0,0
-海外IP數據,IP5,中國,92,中國專利審查引證資料,0,0
-海外IP數據,IP5,中國,93,中國專利法律狀態歷程,0,0
-海外IP數據,IP5,中國,94,中國專利公報韓文翻譯,0,0
-海外IP數據,IP5,日本,95,日本專利公開公報,0,0
-海外IP數據,IP5,日本,96,日本專利公告公報,0,0
-海外IP數據,IP5,日本,97,日本早期專利公報(TEXT),0,0
-海外IP數據,IP5,日本,98,日本設計專利公告公報,0,0
-海外IP數據,IP5,日本,99,日本商標公開公報,0,0
-海外IP數據,IP5,日本,100,日本商標註冊公報,0,0
-海外IP數據,IP5,日本,101,日本專利標準化資料,0,0
-海外IP數據,IP5,日本,102,日本設計專利標準化資料,0,0
-海外IP數據,IP5,日本,103,日本商標標準化資料,0,0
-海外IP數據,IP5,日本,104,PCT日本國家階段專利,0,0
-海外IP數據,IP5,日本,105,日本專利英文摘要,0,0
-海外IP數據,IP5,日本,106,日本專利分類號,0,0
-海外IP數據,IP5,日本,107,專利日英技術詞典,0,0
-海外IP數據,IP5,日本,108,日本專利合金組成,0,0
-海外IP數據,IP5,日本,109,日本發明/新型專利權人變更歷程,0,0
-海外IP數據,WIPO,,110,PCT公開公報,0,0
-海外IP數據,WIPO,,111,WIPO 工業設計 Hague,0,0
-海外IP數據,台灣,,112,台灣發明專利公開公報,0,0
-海外IP數據,台灣,,113,台灣發明專利公開書目資料,0,0
-海外IP數據,台灣,,114,台灣設計專利公告公報,0,0
-海外IP數據,台灣,,115,台灣設計專利公告書目資料,0,0
-海外IP數據,台灣,,116,台灣專利英文摘要,0,0
-海外IP數據,台灣,,117,台灣商標註冊公告公報,0,0
-海外IP數據,台灣,,118,台灣設計專利要部公告,0,0
-海外IP數據,台灣,,119,台灣智慧財產權公報,0,0
-海外IP數據,其他國家,墨西哥,120,墨西哥專利公開公報,0,0
-海外IP數據,其他國家,墨西哥,121,墨西哥設計專利公告公報,0,0
-海外IP數據,其他國家,墨西哥,122,墨西哥商標公告公報,0,0
-海外IP數據,其他國家,墨西哥,123,墨西哥附加價值資料,0,0
-海外IP數據,其他國家,菲律賓,124,菲律賓專利公報,0,0
-海外IP數據,其他國家,哥倫比亞,125,哥倫比亞專利公報,0,0
-海外IP數據,其他國家,俄羅斯,126,俄羅斯專利公報,0,0
-海外IP數據,其他國家,瑞典,127,瑞典專利書目資料,0,0
-海外IP數據,其他國家,西班牙,128,西班牙專利公報,0,0
-海外IP數據,其他國家,以色列,129,以色列專利公報,0,0
-海外IP數據,其他國家,印度,130,印度專利書目資料,0,0
-海外IP數據,其他國家,越南,131,越南專利書目資料,0,0
-海外IP數據,其他國家,ARIPO,132,ARIPO智慧財產權(發明/新型/設計)公報,0,0
-海外IP數據,其他國家,其他,133,藥品國際非專利名稱 (INN),0,0`;
+海外IP數據,IP5,美國,79,美國專利公開公報,N/A,N/A
+海外IP數據,IP5,美國,80,美國專利公告公報,N/A,N/A
+海外IP數據,IP5,美國,81,美國專利公報韓文翻譯,N/A,N/A
+海外IP數據,IP5,美國,82,美國商標公告公報,N/A,N/A
+海外IP數據,IP5,美國,83,美國專利權人變更歷程(舊),N/A,N/A
+海外IP數據,IP5,美國,84,美國專利權人變更歷程,N/A,N/A
+海外IP數據,IP5,歐洲,85,歐洲專利公開公報,N/A,N/A
+海外IP數據,IP5,歐洲,86,歐洲專利公告公報,N/A,N/A
+海外IP數據,IP5,歐洲,87,歐洲專利公報韓文翻譯,N/A,N/A
+海外IP數據,IP5,中國,88,中國發明專利公開公報,N/A,N/A
+海外IP數據,IP5,中國,89,中國發明專利公告公報,N/A,N/A
+海外IP數據,IP5,中國,90,中國外觀設計專利公告公報,N/A,N/A
+海外IP數據,IP5,中國,91,中國專利英文摘要,N/A,N/A
+海外IP數據,IP5,中國,92,中國專利審查引證資料,N/A,N/A
+海外IP數據,IP5,中國,93,中國專利法律狀態歷程,N/A,N/A
+海外IP數據,IP5,中國,94,中國專利公報韓文翻譯,N/A,N/A
+海外IP數據,IP5,日本,95,日本專利公開公報,N/A,N/A
+海外IP數據,IP5,日本,96,日本專利公告公報,N/A,N/A
+海外IP數據,IP5,日本,97,日本早期專利公報(TEXT),N/A,N/A
+海外IP數據,IP5,日本,98,日本設計專利公告公報,N/A,N/A
+海外IP數據,IP5,日本,99,日本商標公開公報,N/A,N/A
+海外IP數據,IP5,日本,100,日本商標註冊公報,N/A,N/A
+海外IP數據,IP5,日本,101,日本專利標準化資料,N/A,N/A
+海外IP數據,IP5,日本,102,日本設計專利標準化資料,N/A,N/A
+海外IP數據,IP5,日本,103,日本商標標準化資料,N/A,N/A
+海外IP數據,IP5,日本,104,PCT日本國家階段專利,N/A,N/A
+海外IP數據,IP5,日本,105,日本專利英文摘要,N/A,N/A
+海外IP數據,IP5,日本,106,日本專利分類號,N/A,N/A
+海外IP數據,IP5,日本,107,專利日英技術詞典,N/A,N/A
+海外IP數據,IP5,日本,108,日本專利合金組成,N/A,N/A
+海外IP數據,IP5,日本,109,日本發明/新型專利權人變更歷程,N/A,N/A
+海外IP數據,WIPO,,110,PCT公開公報,N/A,N/A
+海外IP數據,WIPO,,111,WIPO 工業設計 Hague,N/A,N/A
+海外IP數據,台灣,,112,台灣發明專利公開公報,N/A,N/A
+海外IP數據,台灣,,113,台灣發明專利公開書目資料,N/A,N/A
+海外IP數據,台灣,,114,台灣設計專利公告公報,N/A,N/A
+海外IP數據,台灣,,115,台灣設計專利公告書目資料,N/A,N/A
+海外IP數據,台灣,,116,台灣專利英文摘要,N/A,N/A
+海外IP數據,台灣,,117,台灣商標註冊公告公報,N/A,N/A
+海外IP數據,台灣,,118,台灣設計專利要部公告,N/A,N/A
+海外IP數據,台灣,,119,台灣智慧財產權公報,N/A,N/A
+海外IP數據,其他國家,墨西哥,120,墨西哥專利公開公報,N/A,N/A
+海外IP數據,其他國家,墨西哥,121,墨西哥設計專利公告公報,N/A,N/A
+海外IP數據,其他國家,墨西哥,122,墨西哥商標公告公報,N/A,N/A
+海外IP數據,其他國家,墨西哥,123,墨西哥附加價值資料,N/A,N/A
+海外IP數據,其他國家,菲律賓,124,菲律賓專利公報,N/A,N/A
+海外IP數據,其他國家,哥倫比亞,125,哥倫比亞專利公報,N/A,N/A
+海外IP數據,其他國家,俄羅斯,126,俄羅斯專利公報,N/A,N/A
+海外IP數據,其他國家,瑞典,127,瑞典專利書目資料,N/A,N/A
+海外IP數據,其他國家,西班牙,128,西班牙專利公報,N/A,N/A
+海外IP數據,其他國家,以色列,129,以色列專利公報,N/A,N/A
+海外IP數據,其他國家,印度,130,印度專利書目資料,N/A,N/A
+海外IP數據,其他國家,越南,131,越南專利書目資料,N/A,N/A
+海外IP數據,其他國家,ARIPO,132,ARIPO智慧財產權(發明/新型/設計)公報,N/A,N/A
+海外IP數據,其他國家,其他,133,藥品國際非專利名稱 (INN),N/A,N/A`;
 
         let originalData = [];
         let displayData = [];
@@ -428,6 +429,8 @@ AI學習數據,圖像學習,,78,藥品實驗數據,0,0
                         if (cellValue === '0' || cellValue === 0 || cellValue === '"0"') {
                             cellValue = 'free';
                             td.classList.add('price-free');
+                        } else if (cellValue === 'N/A') {
+                            cellValue = 'N/A';
                         } else {
                             const numericValue = parseFloat(String(cellValue).replace(/[^0-9.-]+/g,""));
                             if (!isNaN(numericValue)) {
@@ -461,12 +464,22 @@ AI學習數據,圖像學習,,78,藥品實驗數據,0,0
                 let valA = a[actualHeaderKey];
                 let valB = b[actualHeaderKey];
 
+                // Handle "N/A" values for price columns: treat them as higher than numbers and "free"
+                if (priceColumns.includes(actualHeaderKey)) {
+                    const valAIsNA = (valA === 'N/A');
+                    const valBIsNA = (valB === 'N/A');
+                    if (valAIsNA && !valBIsNA) return sortAsc ? 1 : -1; // N/A comes after
+                    if (!valAIsNA && valBIsNA) return sortAsc ? -1 : 1; // N/A comes after
+                    if (valAIsNA && valBIsNA) return 0;
+                }
+
                 const valAIsFree = (priceColumns.includes(actualHeaderKey) && (valA === '0' || valA === 0 || valA === '"0"'));
                 const valBIsFree = (priceColumns.includes(actualHeaderKey) && (valB === '0' || valB === 0 || valB === '"0"'));
 
-                if (valAIsFree && !valBIsFree) return sortAsc ? -1 : 1;
+                if (valAIsFree && !valBIsFree) return sortAsc ? -1 : 1; // "free" comes before numbers
                 if (!valAIsFree && valBIsFree) return sortAsc ? 1 : -1;
                 if (valAIsFree && valBIsFree) return 0;
+
 
                 if (priceColumns.includes(actualHeaderKey) || actualHeaderKey === '序號') {
                      const numA = parseFloat(String(valA).replace(/[^0-9.-]+/g,""));
@@ -536,8 +549,10 @@ AI學習數據,圖像學習,,78,藥品實驗數據,0,0
                     if (priceColumns.includes(headerKey)) {
                         if (cellValue === '0' || cellValue === 0 || cellValue === '"0"') {
                             displayValue = 'free';
+                        } else if (cellValue === 'N/A') {
+                            displayValue = 'n/a';
                         } else if (currentCurrency === 'TWD' && !isNaN(parseFloat(cellValue))) {
-                            if (searchTerm !== 'free') {
+                            if (searchTerm !== 'free' && searchTerm !== 'n/a') { // Avoid converting N/A or if searching for 'free'
                                 displayValue = (parseFloat(cellValue) * krwToTwdRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).toLowerCase();
                             }
                         }
@@ -635,6 +650,7 @@ AI學習數據,圖像學習,,78,藥品實驗數據,0,0
 
             const csvHeaders = orderedHeaders.map(header => {
                 if (priceColumns.includes(header)) {
+                    // Export prices in KRW and "N/A" as is, regardless of current display currency
                     return sanitizeCSVCell(`${header.replace('(韓元)', '')} (KRW)`);
                 }
                 return sanitizeCSVCell(header);
@@ -645,8 +661,11 @@ AI學習數據,圖像學習,,78,藥品實驗數據,0,0
                     let cellValue = row[headerKey];
                     if (priceColumns.includes(headerKey)) {
                         if (cellValue === '0' || cellValue === 0 || cellValue === '"0"') {
-                            cellValue = 0;
+                            cellValue = 0; // Export "free" as 0
+                        } else if (cellValue === 'N/A') {
+                            cellValue = 'N/A'; // Export "N/A" as "N/A"
                         } else {
+                            // For other numeric values, ensure they are exported as base KRW numbers
                             cellValue = parseFloat(String(cellValue).replace(/[^0-9.-]+/g,"")) || 0;
                         }
                     }
@@ -699,14 +718,14 @@ AI學習數據,圖像學習,,78,藥品實驗數據,0,0
             switchToKRWButton.addEventListener('click', () => {
                 currentCurrency = 'KRW';
                 updateCurrencyButtonStyles();
-                renderTableHead();
-                applyFiltersAndSearch();
+                renderTableHead(); // Re-render head for currency display
+                applyFiltersAndSearch(); // Re-apply filters which will re-render body
             });
             switchToTWDButton.addEventListener('click', () => {
                 currentCurrency = 'TWD';
                 updateCurrencyButtonStyles();
-                renderTableHead();
-                applyFiltersAndSearch();
+                renderTableHead(); // Re-render head for currency display
+                applyFiltersAndSearch(); // Re-apply filters which will re-render body
             });
 
             exportCSVButton.addEventListener('click', () => exportData('csv'));
